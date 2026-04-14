@@ -1,5 +1,5 @@
 import flet as ft
-
+import requests 
 import random 
 
 
@@ -17,15 +17,37 @@ def main_page(page: ft.Page):
     text_hello.value = 'Hello Geeks'
     # text_hello = 'Hello world'
 
-    def random_name (_):
-        names_list = ["Алексей", "Мария", "Иван", "Ольга", "Курманбек", "Эрмек"]
+        # Создаем переменную вне функции, чтобы хранить список имен
+    cached_names = []
 
-        name_input.value = random.choice(names_list)
+    def random_name(_):
+        global cached_names
+        
+        # Если список еще пуст, скачиваем его
+        if not cached_names:
+            try:
+                response = requests.get("https://raw.githubusercontent.com/Raven-SL/ru-pnames-list/master/lists/male_names_rus.txt")
+                response.raise_for_status()
+                cached_names = response.text.splitlines()
+            except requests.RequestException as e:
+                name_input.value = "Ошибка сети"
+                page.update()
+                return
+
+        # Если список есть (скачан сейчас или ранее), выбираем имя
+        if cached_names:
+            name_input.value = random.choice(cached_names)
+            page.update()
+
+    # def random_name (_):
+    #     names_list = ["Алексей", "Мария", "Иван", "Ольга", "Курманбек", "Эрмек"]
+
+    #     name_input.value = random.choice(names_list)
 
         
-        page.update()
+    #     page.update()
 
-
+    
     def on_button_click(_):
         # print(name_input.value)
         name = name_input.value
